@@ -1,3 +1,5 @@
+/* eslint-disable react/jsx-no-undef */
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-native/no-inline-styles */
 import React, {useState} from 'react';
 import {
@@ -132,8 +134,68 @@ function ControlsContainer({join, leave, toggleWebcam, toggleMic}) {
   );
 }
 
+function ParticipantView({participantId}) {
+  const {webcamStream, webcamOn} = useParticipant(participantId);
+  return webcamOn ? (
+    <RTCView
+      streamURL={new MediaStream([webcamStream.track]).toURL()}
+      objectFit={'cover'}
+      style={{
+        height: 300,
+        marginVertical: 8,
+        marginHorizontal: 8,
+      }}
+    />
+  ) : (
+    <View
+      style={{
+        backgroundColor: 'grey',
+        height: 300,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+      <Text style={{fontSize: 16}}>NO MEDIA</Text>
+    </View>
+  );
+}
+
+function ParticipantList({participants}) {
+  return participants.length > 0 ? (
+    <FlatList
+      data={participants}
+      renderItem={({item}) => {
+        return <ParticipantView participantId={item} />;
+      }}
+    />
+  ) : (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: '#F6F6FF',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+      <Text style={{fontSize: 20}}>Press Join button to enter meeting.</Text>
+    </View>
+  );
+}
+
 function MeetingView() {
-  return null;
+  // Get `participants` from useMeeting Hook
+  const {join, leave, toggleWebcam, toggleMic, participants} = useMeeting({});
+  const participantsArrId = [...participants.keys()]; // Add this line
+
+  return (
+    <View style={{flex: 1}}>
+      <ParticipantList participants={participantsArrId} />
+      <ControlsContainer
+        join={join}
+        leave={leave}
+        toggleWebcam={toggleWebcam}
+        toggleMic={toggleMic}
+      />
+    </View>
+  );
 }
 
 export default function App() {
