@@ -1,113 +1,111 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
-
-import React from 'react';
-import type {Node} from 'react';
+/* eslint-disable react-native/no-inline-styles */
+import React, {useState} from 'react';
 import {
   SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
+  TouchableOpacity,
   Text,
-  useColorScheme,
+  TextInput,
   View,
+  FlatList,
 } from 'react-native';
-
 import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  MeetingProvider,
+  useMeeting,
+  useParticipant,
+  MediaStream,
+  RTCView,
+} from '@videosdk.live/react-native-sdk';
+import {createMeeting, token} from './api';
 
-/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
- * LTI update could not be added via codemod */
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
+function JoinScreen(props) {
+  const [meetingVal, setMeetingVal] = useState('');
   return (
-    <View style={styles.sectionContainer}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: '#F6F6FF',
+        justifyContent: 'center',
+        paddingHorizontal: 6 * 10,
+      }}>
+      <TouchableOpacity
+        onPress={() => {
+          props.getMeetingId();
+        }}
+        style={{backgroundColor: '#1178F8', padding: 12, borderRadius: 6}}>
+        <Text style={{color: 'white', alignSelf: 'center', fontSize: 18}}>
+          Create Meeting
+        </Text>
+      </TouchableOpacity>
+
       <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
+        style={{
+          alignSelf: 'center',
+          fontSize: 22,
+          marginVertical: 16,
+          fontStyle: 'italic',
+          color: 'grey',
+        }}>
+        ---------- OR ----------
       </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
-
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+      <TextInput
+        value={meetingVal}
+        onChangeText={setMeetingVal}
+        placeholder={'XXXX-XXXX-XXXX'}
+        style={{
+          padding: 12,
+          borderWidth: 1,
+          borderRadius: 6,
+          fontStyle: 'italic',
+        }}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">Hi there</Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-        </View>
-      </ScrollView>
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#1178F8',
+          padding: 12,
+          marginTop: 14,
+          borderRadius: 6,
+        }}
+        onPress={() => {
+          props.getMeetingId(meetingVal);
+        }}>
+        <Text style={{color: 'white', alignSelf: 'center', fontSize: 18}}>
+          Join Meeting
+        </Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
-};
+}
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+function ControlsContainer() {
+  return null;
+}
 
-export default App;
+function MeetingView() {
+  return null;
+}
+
+export default function App() {
+  const [meetingId, setMeetingId] = useState(null);
+
+  const getMeetingId = async id => {
+    const meetingId = id == null ? await createMeeting({token}) : id;
+    setMeetingId(meetingId);
+  };
+
+  return meetingId ? (
+    <SafeAreaView style={{flex: 1, backgroundColor: '#F6F6FF'}}>
+      <MeetingProvider
+        config={{
+          meetingId,
+          micEnabled: false,
+          webcamEnabled: true,
+          name: 'Test User',
+        }}
+        token={token}>
+        <MeetingView />
+      </MeetingProvider>
+    </SafeAreaView>
+  ) : (
+    <JoinScreen getMeetingId={getMeetingId} />
+  );
+}
